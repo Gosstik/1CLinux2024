@@ -5,7 +5,7 @@
 
 ## Материалы
 - [Ссылка на google drive](https://drive.google.com/drive/folders/1QniB2VWMpEYQezUCnY9fn29_vP2YVIiU?usp=drive_link).
-- Документация по тому, как устроено ядро: [docs.kernel.org](docs.kernel.org).
+- Документация по тому, как устроено ядро: [docs.kernel.org](docs.kernel.org). Всегда лучше начинать поиск с этого сайта (там есть внутренний поиск)
 
 
 <!----------------------------------------------------------------------------->
@@ -104,15 +104,27 @@ sudo apt-get -y install build-essential \
    ls
    ```
    Должно получиться следующее:
-   ![vroot_boot](Images/vroot_boot.jpg)
-   `boot` не должен лежать внутри `vroot`, так как он должен быть как бы отдельным разделом (как в обычной операционной системе, хотя некоторые системы также создают папку `boot`, но она всё равно не используется при работе операционной системы). 
 
-8) Если сейчас попробовать запустить ядро (без опции `-initrd`), получите следующее:
+   ![vroot_boot](Images/vroot_boot.jpg)
+
+   `boot` не должен лежать внутри `vroot`, так как он должен быть как бы отдельным разделом (как в обычной операционной системе, хотя некоторые системы также создают папку `boot`, но она всё равно не используется при работе операционной системы).
+
+8) Устанавливаем модули ядра
+   ```bash
+   mkdir -p ../vroot/lib/modules
+   
+   cd ../linux-6.7.4
+   INSTALL_MOD_PATH=<abs_path_to_kernel>/vroot/ make modules_install
+   # example
+   INSTALL_MOD_PATH=/home/ownstreamer/Proga/MIPT/Linux/workspace/kernel/vroot/ make modules_install
+   ```
+
+9) Если сейчас попробовать запустить ядро (без опции `-initrd`), получите следующее:
    ![first_start_kernel](Images/first_start_kernel.jpg)
    Нам осталось сделать:
-   - собрать `initramfs`
-   - собрать `busybox`
    - создать `vroot/init`
+   - собрать `busybox`
+   - собрать `initramfs`
 
 <!----------------------------------------------------------------------------->
 
@@ -184,6 +196,7 @@ sudo apt-get -y install build-essential \
 
 7) Устанавливаем `initramfs` из папки `vroot`.
    ```bash
+   cd vroot
    find . | cpio -ov --format=newc | gzip -9 > ../initramfs
    ```
   `cpio` &mdash; контейнер (аналог `tar`-а). Вся файловая система кладётся в контейнер `cpio` и сжимается нужным нам алгоритмом сжатия.
@@ -209,3 +222,13 @@ sudo apt-get -y install build-essential \
 ```bash
 killall qemu-system-x86_64
 ```
+
+<!----------------------------------------------------------------------------->
+
+## Автоматическая сборка ядра (пока не работает стабильно)
+1) Создаёте директорию `kernel`
+2) Копируете туда файл `scripts/create_kernel.sh`
+3) Запускаете команду
+   ```bash
+   ./create_kernel.sh --all
+   ```
